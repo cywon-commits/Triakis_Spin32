@@ -1,0 +1,11 @@
+1 python3 -m triakis.run_idmrg --S 0.5 --m 1.5 --chis 128 256 512 1024
+1 python3 -m triakis.run_idmrg --S 1.5 --J2 0 --nocenters --m 0 --chis 128 256 512 1024
+1 python3 -m triakis.run_idmrg --S 1 --m 3.5 --chis 128 256 512 1024
+1 python3 -m triakis.run_idmrg --S 1.5 --J2 2 --m 4.5 --chis 128 256 512
+1 python3 -m triakis.run_idmrg --S 1.5 --m 3.5 --chis 128 256 512
+1 python3 -m triakis.run_idmrg --S 1.5 --m 6 --chis 128 256
+1 python3 -m triakis.run_idmrg --S 0.5 --m 2.5 --chis 128 256 512
+1 python3 -m triakis.run_idmrg --S 1 --m 3 --chis 128 256 512
+1 python3 -m triakis.run_idmrg --S 1 --m 4 --chis 128 256 512
+1 python3 -m triakis.run_idmrg --S 1.5 --m 4.5 --nring 3 --chis 128 256
+1 python3 -m triakis.run_idmrg --S 1.5 --m 4.5 --seed 1 --chis 128 256
