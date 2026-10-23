@@ -1,0 +1,12 @@
+torus T1=(3, 0) T2=(-1, 2) N_A= 6 J_AA=1 J_AB=1: E_min=-18.000 (-3N=-18), E_max=-18.000, degeneracy of minimum = 64 / 64
+torus T1=(3, 0) T2=(-1, 2) N_A= 6 J_AA=1 J_AB=1.2: E_min=-25.200 (-3N=-18), E_max=-20.400, degeneracy of minimum = 2 / 64
+torus T1=(3, 0) T2=(-1, 2) N_A= 6 J_AA=1.2 J_AB=1: E_min=-19.200 (-3N=-18), E_max=-14.400, degeneracy of minimum = 20 / 64
+torus T1=(3, 0) T2=(0, 3) N_A= 9 J_AA=1 J_AB=1: E_min=-27.000 (-3N=-27), E_max=-27.000, degeneracy of minimum = 512 / 512
+torus T1=(3, 0) T2=(0, 3) N_A= 9 J_AA=1 J_AB=1.2: E_min=-37.800 (-3N=-27), E_max=-30.600, degeneracy of minimum = 2 / 512
+torus T1=(3, 0) T2=(0, 3) N_A= 9 J_AA=1.2 J_AB=1: E_min=-28.800 (-3N=-27), E_max=-21.600, degeneracy of minimum = 42 / 512
+torus T1=(4, 0) T2=(0, 4) N_A=16 J_AA=1 J_AB=1: E_min=-48.000 (-3N=-48), E_max=-48.000, degeneracy of minimum = 65536 / 65536
+torus T1=(4, 0) T2=(0, 4) N_A=16 J_AA=1 J_AB=1.2: E_min=-67.200 (-3N=-48), E_max=-54.400, degeneracy of minimum = 2 / 65536
+torus T1=(4, 0) T2=(0, 4) N_A=16 J_AA=1.2 J_AB=1: E_min=-51.200 (-3N=-48), E_max=-38.400, degeneracy of minimum = 42 / 65536
+torus T1=(4, 0) T2=(-2, 4) N_A=16 J_AA=1 J_AB=1: E_min=-48.000 (-3N=-48), E_max=-48.000, degeneracy of minimum = 65536 / 65536
+torus T1=(4, 0) T2=(-2, 4) N_A=16 J_AA=1 J_AB=1.2: E_min=-67.200 (-3N=-48), E_max=-54.400, degeneracy of minimum = 2 / 65536
+torus T1=(4, 0) T2=(-2, 4) N_A=16 J_AA=1.2 J_AB=1: E_min=-51.200 (-3N=-48), E_max=-38.400, degeneracy of minimum = 314 / 65536
