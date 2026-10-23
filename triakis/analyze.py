@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from triakis.model import sublattice, A1, A2
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-COLS = ['S', 'J2', 'Ly', 'm', 'nring', 'seed', 'chi', 'e_corner', 'trunc', 'sz_corner0', 'sz_corner1',
+COLS = ['S', 'J1', 'J2', 'Ly', 'm', 'nring', 'seed', 'chi', 'e_corner', 'trunc', 'sz_corner0', 'sz_corner1',
         'sz_corner2', 'sz_up', 'sz_down', 'xi_tm2', 'xi_tm0', 'xi_tm4', 'phase_tm2', 'S_ring0']
 
 
@@ -114,19 +114,82 @@ def structure_factor_A(npz, Ly, centers=True, nk=121):
                 **{f'S_{k}': float(S(q)) for k, q in pts.items()})
 
 
+def pick(rows, **kw):
+    """Classical-init entry with the largest chi for the given parameters (None if absent)."""
+    s = [r for r in rows if all(r.get(k) == v for k, v in kw.items()) and r['seed'] < 0]
+    return max(s, key=lambda r: r['chi']) if s else None
+
+
+def fig_scan(rows):
+    """J_AA/J_AB scan on Ly=3: e(4.5)-e(3.5) per ring at chi=128 and 256."""
+    fig, axs = plt.subplots(1, 2, figsize=(10, 4))
+    out = []
+    J1s = sorted({r['J1'] for r in rows if r['S'] == 1.5 and r['J2'] == 1 and r['Ly'] == 3 and r['centers']})
+    for chi, mk in ((128, 'o--'), (256, 's-')):
+        xs, ds, xi = [], [], []
+        for J in J1s:
+            a = [r for r in rows if r['S'] == 1.5 and r['J2'] == 1 and r['J1'] == J and r['Ly'] == 3
+                 and r['centers'] and r['seed'] < 0 and r['chi'] == chi and r['m'] == 4.5 and r['nring'] == 1]
+            b = [r for r in rows if r['S'] == 1.5 and r['J2'] == 1 and r['J1'] == J and r['Ly'] == 3
+                 and r['centers'] and r['seed'] < 0 and r['chi'] == chi and r['m'] == 3.5 and r['nring'] == 1]
+            if a and b:
+                xs.append(J); ds.append(a[0]['e_ring'] - b[0]['e_ring']); xi.append(a[0]['xi_tm2'])
+                out.append(dict(J_AA=J, chi=chi, e45=a[0]['e_ring'], e35=b[0]['e_ring'],
+                                diff=a[0]['e_ring'] - b[0]['e_ring'], xi_perp_45=a[0]['xi_tm2'],
+                                xi_perp_35=b[0]['xi_tm2']))
+        axs[0].plot(xs, ds, mk, label=f'χ={chi}')
+        axs[1].plot(xs, xi, mk, label=f'χ={chi}')
+    axs[0].axhline(0, color='k', lw=0.8)
+    axs[0].axvline(1, color='gray', ls=':', lw=1)
+    axs[0].set_xlabel('J_AA / J_AB')
+    axs[0].set_ylabel('e_ring(m=4.5) − e_ring(m=3.5)')
+    axs[0].set_title('< 0: m=S/3 ferrimagnet favoured;  > 0: collapsed')
+    axs[1].set_xlabel('J_AA / J_AB')
+    axs[1].set_ylabel('ξ⊥ at m=4.5 [ring spacings]')
+    axs[1].set_yscale('log')
+    for ax in axs:
+        ax.legend(fontsize=8)
+    fig.suptitle('S=3/2, Ly=3 infinite cylinder')
+    fig.tight_layout()
+    fig.savefig(os.path.join(ROOT, 'figs', 'jscan.png'), dpi=130)
+    plt.close(fig)
+    return out
+
+
+def fig_finite(path=None):
+    path = path or os.path.join(ROOT, 'data', 'finite_results.jsonl')
+    if not os.path.exists(path):
+        return []
+    res = [json.loads(l) for l in open(path)]
+    fig, ax = plt.subplots(figsize=(5.5, 4))
+    for Lx in sorted({r['Lx'] for r in res}):
+        s = sorted([r for r in res if r['Lx'] == Lx], key=lambda r: r['Sz'])
+        e0 = min(r['E'] for r in s)
+        ax.plot([r['Sz'] for r in s], [r['E'] - e0 for r in s], 'o-',
+                label=f"Lx={Lx} (S(N_B−N_A)={1.5 * (s[0]['nB'] - s[0]['nA']):g})")
+    ax.set_xlabel('S^z_tot')
+    ax.set_ylabel('E − E_min')
+    ax.set_title('finite open cylinder, Ly=3, S=3/2, J_AA=J_AB')
+    ax.legend(fontsize=8)
+    fig.tight_layout()
+    fig.savefig(os.path.join(ROOT, 'figs', 'finite_E_Sz.png'), dpi=130)
+    plt.close(fig)
+    return res
+
+
 def write_table(rows):
     os.makedirs(os.path.join(ROOT, 'results'), exist_ok=True)
     with open(os.path.join(ROOT, 'results', 'table.csv'), 'w') as f:
         f.write(','.join(COLS + ['centers', 'tag']) + '\n')
         for r in rows:
             f.write(','.join(str(r.get(c)) for c in COLS) + f",{r['centers']},{r['tag']}\n")
-    hdr = ['S', 'J2', 'Ly', 'm', 'cell', 'init', 'χ', 'e/corner', 'trunc', '⟨Sz⟩ A,B,C', '⟨Sz⟩ up,dn',
+    hdr = ['S', 'J_AA', 'J_AB', 'Ly', 'm', 'cell', 'init', 'χ', 'e/corner', 'trunc', '⟨Sz⟩ A,B,C', '⟨Sz⟩ up,dn',
            'ξ⊥', 'ξ∥', 'ξ(ΔSz=2)', 'S_ent']
     lines = ['| ' + ' | '.join(hdr) + ' |', '|' + '---|' * len(hdr)]
     f3 = lambda v: '—' if v is None else f'{v:.3f}'
     for r in rows:
         lines.append('| ' + ' | '.join([
-            f"{r['S']:g}" + ('' if r['centers'] else ' (corners only)'), f"{r['J2']:g}", str(r['Ly']),
+            f"{r['S']:g}" + ('' if r['centers'] else ' (corners only)'), f"{r['J1']:g}", f"{r['J2']:g}", str(r['Ly']),
             f"{r['m']:g}", str(r['nring']), 'cl' if r['seed'] < 0 else f"rnd{r['seed']}", str(r['chi']),
             f"{r['e_corner']:.6f}", f"{r['trunc']:.1e}",
             ', '.join(f"{r[f'sz_corner{s}']:.3f}" for s in range(3)),
@@ -142,23 +205,24 @@ def group(rows, **kw):
 
 
 def fig_em(rows):
-    fig, axs = plt.subplots(1, 2, figsize=(10, 4))
-    for ax, Ly in zip(axs, (3, 6)):
+    fig, ax = plt.subplots(figsize=(6, 4.2))
+    for Ly, mk in ((3, 'o-'), (6, 's--')):
         sel = [r for r in rows if r['S'] == 1.5 and r['J2'] == 1 and r['J1'] == 1 and r['Ly'] == Ly
                and r['centers'] and r['seed'] < 0]
         for chi in sorted({r['chi'] for r in sel}):
-            s = sorted([r for r in sel if r['chi'] == chi], key=lambda r: r['m'])
-            # one entry per m: prefer the smallest cell
             best = {}
-            for r in s:
+            for r in sorted([r for r in sel if r['chi'] == chi], key=lambda r: r['nring']):
                 best.setdefault(r['m'], r)
             ms = sorted(best)
-            ax.plot(ms, [best[m]['e_ring'] for m in ms], 'o-', label=f'χ={chi}')
-        ax.set_xlabel('m = Sz per ring')
-        ax.set_ylabel('energy per ring')
-        ax.set_title(f'S=3/2, J2=J1, Ly={Ly}')
-        ax.axvline(6, color='gray', ls=':', lw=1)
-        ax.legend(fontsize=8)
+            ax.plot([m * 3 / Ly for m in ms], [best[m]['e_corner'] for m in ms], mk, label=f'Ly={Ly}, χ={chi}')
+    ax.axvline(4.5, color='gray', ls=':', lw=1)
+    ax.axvline(6, color='gray', ls='--', lw=0.8)
+    ax.text(4.52, ax.get_ylim()[1], ' S/3 per site', va='top', fontsize=7, color='gray')
+    ax.text(6.02, ax.get_ylim()[1], ' classical', va='top', fontsize=7, color='gray')
+    ax.set_xlabel('Sz per 3 corners (= per ring for Ly=3)')
+    ax.set_ylabel('energy per corner (J)')
+    ax.set_title('S=3/2, J_AA=J_AB: e(m)')
+    ax.legend(fontsize=7)
     fig.tight_layout()
     fig.savefig(os.path.join(ROOT, 'figs', 'e_of_m.png'), dpi=130)
     plt.close(fig)
@@ -264,15 +328,19 @@ if __name__ == '__main__':
     print('\n'.join(write_table(rows)))
     print('\n'.join(verification_table()))
     fig_em(rows)
+    scan = fig_scan(rows)
+    fin = fig_finite()
+    json.dump(dict(scan=scan, finite=fin), open(os.path.join(ROOT, 'results', 'derived.json'), 'w'), indent=1)
     tags = main_tags(rows)
-    lab = lambda r: (f"S={r['S']:g}" + ('' if r['centers'] else ' corners only') + f" J2={r['J2']:g} Ly={r['Ly']}"
+    lab = lambda r: (f"S={r['S']:g}" + ('' if r['centers'] else ' corners only') + f" J_AA={r['J1']:g} J_AB={r['J2']:g} Ly={r['Ly']}"
                      f" m={r['m']:g} n={r['nring']}" + ('' if r['seed'] < 0 else f" rnd{r['seed']}"))
     # xi vs chi: main S=3/2 cases
-    cases = [(lab(v[0]), v) for k, v in tags.items() if v[0]['S'] == 1.5 and v[0]['J2'] == 1 and v[0]['centers']]
+    cases = [(lab(v[0]), v) for k, v in tags.items() if v[0]['S'] == 1.5 and v[0]['J2'] == 1 and v[0]['J1'] == 1 and v[0]['centers']]
     fig_xi(rows, cases)
     import shutil
     shutil.move(os.path.join(ROOT, 'figs', 'xi_vs_chi.png'), os.path.join(ROOT, 'figs', 'xi_vs_chi_S32.png'))
     cases = [(lab(v[0]), v) for k, v in tags.items() if not (v[0]['S'] == 1.5 and v[0]['J2'] == 1 and v[0]['centers'])]
+    cases += [(lab(v[0]), v) for k, v in tags.items() if v[0]['S'] == 1.5 and v[0]['J2'] == 1 and v[0]['J1'] != 1]
     fig_xi(rows, cases)
     shutil.move(os.path.join(ROOT, 'figs', 'xi_vs_chi.png'), os.path.join(ROOT, 'figs', 'xi_vs_chi_controls.png'))
     # correlations: S=3/2 J2=1 at each m (largest chi), and chi dependence at the m* candidates
@@ -287,10 +355,10 @@ if __name__ == '__main__':
         return out
     import sys as _s
     for name, sel, title in (
-        ('corr_S32_Ly3.png', lambda r: r['S'] == 1.5 and r['J2'] == 1 and r['centers'] and r['Ly'] == 3
+        ('corr_S32_Ly3.png', lambda r: r['S'] == 1.5 and r['J2'] == 1 and r['J1'] == 1 and r['centers'] and r['Ly'] == 3
          and r['seed'] < 0 and r['m'] in (4.5, 5), 'S=3/2, J2=J1, Ly=3'),
         ('corr_S32_Ly6.png', lambda r: r['S'] == 1.5 and r['J2'] == 1 and r['Ly'] == 6, 'S=3/2, J2=J1, Ly=6'),
-        ('corr_controls.png', lambda r: not (r['S'] == 1.5 and r['J2'] == 1 and r['centers']),
+        ('corr_controls.png', lambda r: not (r['S'] == 1.5 and r['J2'] == 1 and r['J1'] == 1 and r['centers']) and not (r['J1'] in (1.2, 1.3, 1.8, 0.8)),
          'controls (largest χ)')):
         cs = ccase(sel)
         if name == 'corr_controls.png':
