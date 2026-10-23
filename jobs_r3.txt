@@ -1,0 +1,5 @@
+1 python3 -m triakis.run_idmrg --J1 1.8 --m 5.5 --nring 2 --chis 128 --Rmax 30
+1 python3 -m triakis.run_idmrg --J1 1.8 --m 5 --nring 2 --chis 128 --Rmax 30
+1 python3 -m triakis.run_idmrg --J1 1.6 --m 5 --nring 2 --chis 128 --Rmax 30
+1 python3 -m triakis.run_idmrg --J1 1.6 --m 5.5 --nring 2 --chis 128 --Rmax 30
+1 python3 -m triakis.run_idmrg --J1 1.8 --m 6.5 --nring 2 --chis 128 --Rmax 30
