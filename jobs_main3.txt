@@ -1,0 +1,9 @@
+1 python3 -m triakis.run_idmrg --S 1.5 --m 3.5 --chis 128 256 512
+1 python3 -m triakis.finite_cyl --Lx 4 --Sz 7 9 11 13 15 --chi 512
+1 python3 -m triakis.run_idmrg --m 5 --nring 2 --seed 1 --chis 128 256
+1 python3 -m triakis.run_idmrg --m 5.5 --nring 2 --seed 2 --chis 128 256
+1 python3 -m triakis.finite_cyl --Lx 6 --Sz 16 18 20 22 24 26 --chi 512
+1 python3 -m triakis.run_idmrg --m 4.5 --seed 1 --chis 128 256
+1 python3 -m triakis.run_idmrg --S 1 --m 4 --chis 128 256 512
+1 python3 -m triakis.run_idmrg --S 1.5 --m 4.5 --nring 3 --chis 128 256
+1 python3 -m triakis.run_idmrg --S 1.5 --m 6 --chis 128 256
