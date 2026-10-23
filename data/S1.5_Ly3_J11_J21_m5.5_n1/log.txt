@@ -23,3 +23,7 @@ INFO    : Setting chi_max=16
 INFO    : activate DensityMatrixMixer with initial amplitude 0.0001
 INFO    : Setting chi_max=32
 INFO    : activate DensityMatrixMixer with initial amplitude 0.0001
+INFO    : Setting chi_max=64
+INFO    : activate DensityMatrixMixer with initial amplitude 0.0001
+INFO    : Setting chi_max=128
+INFO    : activate DensityMatrixMixer with initial amplitude 0.0001
