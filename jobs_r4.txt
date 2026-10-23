@@ -1,0 +1,1 @@
+1 python3 -m triakis.run_idmrg --J1 1.8 --m 4.5 --restart --chis 256 --Rmax 30
