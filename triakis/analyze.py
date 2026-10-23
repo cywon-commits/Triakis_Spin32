@@ -186,6 +186,37 @@ def fig_finite(path=None):
     return res
 
 
+def fig_gap_vs_trunc(rows):
+    """e_ring(3.5) - e_ring(4.5) at J_AA=J_AB vs truncation error of the m=3.5 run (same chi)."""
+    def get(m, chi):
+        c = [r for r in rows if r['tag'] == f'S1.5_Ly3_J11_J21_m{m:g}_n1' and r['chi'] == chi]
+        return c[-1] if c else None
+    pts = []
+    for chi in (128, 256, 512, 1024):
+        a, b = get(3.5, chi), get(4.5, chi)
+        if a and b:
+            pts.append((chi, a['trunc'], a['e_ring'] - b['e_ring']))
+    if not pts:
+        return []
+    eps = np.array([p[1] for p in pts]); gap = np.array([p[2] for p in pts])
+    k = float(np.sum(eps * gap) / np.sum(eps * eps))          # least squares through the origin
+    fig, ax = plt.subplots(figsize=(5.2, 4))
+    ax.plot(eps, gap, 'o', ms=7)
+    for chi, e, g in pts:
+        ax.annotate(f'χ={chi}', (e, g), textcoords='offset points', xytext=(6, -10), fontsize=8)
+    x = np.linspace(0, eps.max() * 1.1, 50)
+    ax.plot(x, k * x, '--', lw=1, label=f'through origin: gap = {k:.0f} ε')
+    ax.set_xlim(0, None); ax.set_ylim(0, None)
+    ax.set_xlabel('truncation error ε of the m=3.5 run')
+    ax.set_ylabel('e_ring(3.5) − e_ring(4.5)')
+    ax.set_title('S=3/2, J_AA=J_AB, Ly=3')
+    ax.legend(fontsize=8)
+    fig.tight_layout()
+    fig.savefig(os.path.join(ROOT, 'figs', 'gap_vs_trunc.png'), dpi=130)
+    plt.close(fig)
+    return [dict(chi=c, eps=e, gap=g, ratio=g / e) for c, e, g in pts]
+
+
 def write_table(rows):
     os.makedirs(os.path.join(ROOT, 'results'), exist_ok=True)
     with open(os.path.join(ROOT, 'results', 'table.csv'), 'w') as f:
@@ -340,6 +371,8 @@ if __name__ == '__main__':
     print('\n'.join(verification_table()))
     fig_em(rows)
     scan = fig_scan(rows)
+    gvt = fig_gap_vs_trunc(rows)
+    print(gvt)
     fin = fig_finite()
     json.dump(dict(scan=scan, finite=fin), open(os.path.join(ROOT, 'results', 'derived.json'), 'w'), indent=1)
     tags = main_tags(rows)
