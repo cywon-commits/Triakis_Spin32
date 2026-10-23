@@ -108,7 +108,7 @@ if __name__ == '__main__':
         rng = np.random.default_rng(a.seed) if a.seed >= 0 else None
         psi = MPS.from_product_state(M.lat.mps_sites(), levels(a.S, kind, Sz, rng), bc='finite')
         chis = [c for c in (64, 128, 256, 512, 1024) if c < a.chi] + [a.chi]
-        p = dict(mixer=True, max_E_err=1e-8, max_S_err=1e-5, min_sweeps=4, max_sweeps=24,
+        p = dict(mixer=True, max_E_err=1e-8, max_S_err=1e-5, min_sweeps=4, max_sweeps=24, max_trunc_err=1.0,
                  chi_list={2 * k: c for k, c in enumerate(chis)},
                  trunc_params=dict(chi_max=a.chi, svd_min=1e-10))
         info = dmrg.run(psi, M, p)
