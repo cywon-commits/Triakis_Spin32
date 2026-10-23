@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from triakis.model import sublattice
+from triakis.model import sublattice, A1, A2
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 COLS = ['S', 'J2', 'Ly', 'm', 'nring', 'seed', 'chi', 'e_corner', 'trunc', 'sz_corner0', 'sz_corner1',
@@ -56,6 +56,62 @@ def corr_profile(npz, Ly, centers=True):
                     prof[n] = v[s].mean()
             out[f'{q}_{name}'] = prof
     return out
+
+
+def bond_energies(npz, Ly, centers=True):
+    """<S.S> on A-A (corner-corner) and A-B (corner-center) bonds from ring-0 references."""
+    d = np.load(npz)
+    tab, sz = d['tab'], d['sz']
+    L = len(tab)
+    nps = 3 * Ly if centers else Ly
+
+    def site(ring, x, u):
+        cand = [j for j in range(L) if tab[j][1] == x % Ly and tab[j][2] == u and tab[j][0] == ring % (L // nps)]
+        return cand[0] + (ring - ring % (L // nps)) * nps
+
+    def SS(ref_u, ring, x, u):
+        i0 = site(0, 0, ref_u)
+        j = site(ring, x, u)
+        k = np.nonzero(d[f'js_u{ref_u}'] == j)[0][0]
+        return d[f'perp_u{ref_u}'][k] + d[f'zzc_u{ref_u}'][k] + sz[i0 % L] * sz[j % L]
+    # corner (0,0) to corners (1,0), (0,1), (-1,1)   [tab x is along a1, ring along a2]
+    aa = [SS(0, 0, 1, 0), SS(0, 1, 0, 0), SS(0, 1, -1, 0)]
+    out = dict(SS_AA=float(np.mean(aa)), SS_AA_list=[float(v) for v in aa])
+    if centers:
+        # down center of cell (0,0): corners (1,0),(0,1),(1,1); up center (0,0): (1,0),(0,1)
+        ab = [SS(2, 0, 1, 0), SS(2, 1, 0, 0), SS(2, 1, 1, 0), SS(1, 0, 1, 0), SS(1, 1, 0, 0)]
+        out.update(SS_AB=float(np.mean(ab)), SS_AB_list=[float(v) for v in ab])
+    return out
+
+
+def structure_factor_A(npz, Ly, centers=True, nk=121):
+    """Connected S^zS^z structure factor of A (corner) sites, from the ring-0 corner reference.
+
+    S(q) = sum_dr C(dr) cos(q.dr) (symmetrised; on-site term omitted -> constant offset).
+    Returns the (qx,qy) of the maximum and the values at Gamma, K, M.
+    """
+    d = np.load(npz)
+    tab = d['tab']
+    L = len(tab)
+    nps = 3 * Ly if centers else Ly
+    js = d['js_u0']
+    ring = js // nps
+    x = tab[js % L, 1]
+    u = tab[js % L, 2]
+    sel = u == 0
+    r = np.outer(x[sel], A1) + np.outer(ring[sel], A2)
+    C = d['zzc_u0'][sel]
+
+    def S(q):
+        return 2 * np.sum(C * np.cos(r @ q))
+    b1 = 2 * np.pi * np.array([1, -1 / np.sqrt(3)])
+    b2 = 2 * np.pi * np.array([0, 2 / np.sqrt(3)])
+    pts = {'Gamma': 0 * b1, 'K': (2 * b1 + b2) / 3, 'M': b1 / 2}
+    grid = [(i / nk) * b1 + (j / nk) * b2 for i in range(nk) for j in range(nk)]
+    vals = np.array([S(q) for q in grid])
+    qmax = grid[int(np.argmax(vals))]
+    return dict(qmax=[float(v) for v in qmax], Smax=float(vals.max()),
+                **{f'S_{k}': float(S(q)) for k, q in pts.items()})
 
 
 def write_table(rows):
