@@ -237,7 +237,7 @@ def fig_em(rows):
     plt.close(fig)
 
 
-def fig_xi(rows, cases):
+def fig_xi(rows, cases, loglog=False):
     fig, axs = plt.subplots(1, 2, figsize=(10, 4))
     for label, sel in cases:
         s = sorted(sel, key=lambda r: r['chi'])
@@ -248,6 +248,8 @@ def fig_xi(rows, cases):
         axs[1].plot(chis, [r.get('xi_tm0') for r in s], 's-', color=l.get_color(), label=label)
     for ax, t in zip(axs, ('ξ⊥ (ΔSz=±1 sector)', 'ξ∥ (ΔSz=0 sector)')):
         ax.set_xscale('log', base=2)
+        if loglog:
+            ax.set_yscale('log')
         ax.set_xlabel('χ')
         ax.set_ylabel('ξ  [ring spacings, √3/2 each]')
         ax.set_title(t)
@@ -344,8 +346,11 @@ if __name__ == '__main__':
     lab = lambda r: (f"S={r['S']:g}" + ('' if r['centers'] else ' corners only') + f" J_AA={r['J1']:g} J_AB={r['J2']:g} Ly={r['Ly']}"
                      f" m={r['m']:g} n={r['nring']}" + ('' if r['seed'] < 0 else f" rnd{r['seed']}"))
     # xi vs chi: main S=3/2 cases
-    cases = [(lab(v[0]), v) for k, v in tags.items() if v[0]['S'] == 1.5 and v[0]['J2'] == 1 and v[0]['J1'] == 1 and v[0]['centers']]
-    fig_xi(rows, cases)
+    keep = {'S1.5_Ly3_J11_J21_m4.5_n1': 'Ly=3, m=4.5 (= m*)', 'S1.5_Ly6_J11_J21_m9_n1': 'Ly=6, m=9 (= m*)',
+            'S1.5_Ly3_J11_J21_m5_n2': 'Ly=3, m=5', 'S1.5_Ly3_J11_J20_m0_n2_nocen': 'control: J_AB=0 (corners only)',
+            'S0.5_Ly3_J11_J21_m1.5_n1': 'control: S=1/2, m=1.5'}
+    cases = [(keep[k], tags[k]) for k in keep if k in tags]
+    fig_xi(rows, cases, loglog=True)
     import shutil
     shutil.move(os.path.join(ROOT, 'figs', 'xi_vs_chi.png'), os.path.join(ROOT, 'figs', 'xi_vs_chi_S32.png'))
     cases = [(lab(v[0]), v) for k, v in tags.items() if not (v[0]['S'] == 1.5 and v[0]['J2'] == 1 and v[0]['centers'])]
