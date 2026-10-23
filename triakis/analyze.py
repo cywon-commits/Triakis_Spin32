@@ -121,35 +121,44 @@ def pick(rows, **kw):
 
 
 def fig_scan(rows):
-    """J_AA/J_AB scan on Ly=3: e(4.5)-e(3.5) per ring at chi=128 and 256."""
-    fig, axs = plt.subplots(1, 2, figsize=(10, 4))
+    """J_AA/J_AB scan on Ly=3 with 2-ring cells: e(m) per J and the plateau gap e(5)-e(4.5)."""
+    base = [r for r in rows if r['S'] == 1.5 and r['J2'] == 1 and r['Ly'] == 3 and r['centers']
+            and r['seed'] < 0]
+
+    def e(J, m, chi):
+        c = [r for r in base if r['J1'] == J and r['m'] == m and r['chi'] == chi and r['nring'] == 2]
+        if not c and m == 4.5:   # at J=1 the 1-, 2- and 3-ring cells agree; allow the 1-ring value
+            c = [r for r in base if r['J1'] == J and r['m'] == m and r['chi'] == chi]
+        return c[0] if c else None
+    J1s = sorted({r['J1'] for r in base})
+    fig, axs = plt.subplots(1, 3, figsize=(15, 4.2))
     out = []
-    J1s = sorted({r['J1'] for r in rows if r['S'] == 1.5 and r['J2'] == 1 and r['Ly'] == 3 and r['centers']})
-    for chi, mk in ((128, 'o--'), (256, 's-')):
+    for J in J1s:
+        ms = sorted({r['m'] for r in base if r['J1'] == J and r['nring'] == 2 and r['chi'] == 128} | {4.5})
+        pts = [(m, e(J, m, 128)) for m in ms]
+        pts = [(m, r) for m, r in pts if r is not None and m in (4.0, 4.5, 5.0, 5.5, 6.0, 6.5)]
+        if len(pts) >= 2:
+            e0 = min(r['e_ring'] for _, r in pts)
+            axs[0].plot([m for m, _ in pts], [r['e_ring'] - e0 for _, r in pts], 'o-', label=f'J_AA={J:g}')
+    for chi, mk in ((128, 'o-'), (256, 's--')):
         xs, ds, xi = [], [], []
         for J in J1s:
-            a = [r for r in rows if r['S'] == 1.5 and r['J2'] == 1 and r['J1'] == J and r['Ly'] == 3
-                 and r['centers'] and r['seed'] < 0 and r['chi'] == chi and r['m'] == 4.5 and r['nring'] == 1]
-            b = [r for r in rows if r['S'] == 1.5 and r['J2'] == 1 and r['J1'] == J and r['Ly'] == 3
-                 and r['centers'] and r['seed'] < 0 and r['chi'] == chi and r['m'] == 3.5 and r['nring'] == 1]
+            a, b = e(J, 4.5, chi), e(J, 5.0, chi)
             if a and b:
-                xs.append(J); ds.append(a[0]['e_ring'] - b[0]['e_ring']); xi.append(a[0]['xi_tm2'])
-                out.append(dict(J_AA=J, chi=chi, e45=a[0]['e_ring'], e35=b[0]['e_ring'],
-                                diff=a[0]['e_ring'] - b[0]['e_ring'], xi_perp_45=a[0]['xi_tm2'],
-                                xi_perp_35=b[0]['xi_tm2']))
-        axs[0].plot(xs, ds, mk, label=f'χ={chi}')
-        axs[1].plot(xs, xi, mk, label=f'χ={chi}')
-    axs[0].axhline(0, color='k', lw=0.8)
-    axs[0].axvline(1, color='gray', ls=':', lw=1)
-    axs[0].set_xlabel('J_AA / J_AB')
-    axs[0].set_ylabel('e_ring(m=4.5) − e_ring(m=3.5)')
-    axs[0].set_title('< 0: m=S/3 ferrimagnet favoured;  > 0: collapsed')
-    axs[1].set_xlabel('J_AA / J_AB')
-    axs[1].set_ylabel('ξ⊥ at m=4.5 [ring spacings]')
-    axs[1].set_yscale('log')
+                xs.append(J); ds.append(b['e_ring'] - a['e_ring']); xi.append(a['xi_tm2'])
+                out.append(dict(J_AA=J, chi=chi, e45=a['e_ring'], e5=b['e_ring'], gap=b['e_ring'] - a['e_ring'],
+                                xi_perp_45=a['xi_tm2'], cell45=a['nring']))
+        axs[1].plot(xs, ds, mk, label=f'χ={chi}')
+        axs[2].plot(xs, xi, mk, label=f'χ={chi}')
+    axs[0].set_xlabel('m (Sz per ring)'); axs[0].set_ylabel('e_ring − min  (χ=128, 2-ring cells)')
+    axs[0].set_title('e(m) for each J_AA/J_AB')
+    axs[1].axhline(0, color='k', lw=0.8)
+    axs[1].set_xlabel('J_AA / J_AB'); axs[1].set_ylabel('Δ₊ = e_ring(5) − e_ring(4.5)')
+    axs[1].set_title('plateau gap (> 0: m = S/3 ferrimagnet)')
+    axs[2].set_xlabel('J_AA / J_AB'); axs[2].set_ylabel('ξ⊥ at m=4.5 [ring spacings]'); axs[2].set_yscale('log')
     for ax in axs:
-        ax.legend(fontsize=8)
-    fig.suptitle('S=3/2, Ly=3 infinite cylinder')
+        ax.legend(fontsize=7)
+    fig.suptitle('S=3/2, Ly=3 infinite cylinder: J_AA/J_AB scan')
     fig.tight_layout()
     fig.savefig(os.path.join(ROOT, 'figs', 'jscan.png'), dpi=130)
     plt.close(fig)
