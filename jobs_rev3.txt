@@ -1,0 +1,1 @@
+1 python3 -m triakis.finite_cyl --Lx 4 --Sz 12 10 --chi 512
