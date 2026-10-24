@@ -99,7 +99,7 @@ class TriakisCylinder(Lattice):
 class TriakisHeisenberg(CouplingMPOModel):
     """H = J1 sum_cc S.S + J2 sum_{corner-center} S.S on an (infinite) cylinder.
 
-    Options: S, J1, J2, Ly, Lx (rings per MPS unit cell), bc_MPS, centers, conserve.
+    Options: S, J1, J2, h, Ly, Lx (rings per MPS unit cell), bc_MPS, centers, conserve.
     """
 
     def init_sites(self, model_params):
@@ -125,6 +125,10 @@ class TriakisHeisenberg(CouplingMPOModel):
             for u1, u2, dx in self.lat.pairs[kind]:
                 self.add_coupling(J[kind], u1, 'Sz', u2, 'Sz', dx)
                 self.add_coupling(0.5 * J[kind], u1, 'Sp', u2, 'Sm', dx, plus_hc=True)
+        h = model_params.get('h', 0.0)          # Zeeman term -h sum_i S^z_i (field scan, task B)
+        if h:
+            for u in range(len(self.lat.unit_cell)):
+                self.add_onsite(-h, u, 'Sz')
 
 
 def ring_site_table(lat):
