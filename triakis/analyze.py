@@ -217,6 +217,30 @@ def fig_gap_vs_trunc(rows):
     return [dict(chi=c, eps=e, gap=g, ratio=g / e) for c, e, g in pts]
 
 
+def cell_monotonicity_check(rows, tol=1e-4):
+    """e_ring must not increase when nring is multiplied by an integer (same S, Ly, J, m, chi).
+
+    A larger cell contains every state of a smaller one, so a higher energy in the
+    larger cell is an optimisation failure, not physics.  tol=1e-4 per ring ignores the
+    ~1e-5 noise between equivalent runs.  Returns the violations.
+    """
+    from collections import defaultdict
+    g = defaultdict(dict)
+    for r in rows:
+        if r['seed'] >= 0:
+            continue
+        g[(r['S'], r['Ly'], r['J1'], r['J2'], r['m'], r['chi'], r['centers'])][r['nring']] = r['e_ring']
+    bad = []
+    for k, d in g.items():
+        ns = sorted(d)
+        for i, a in enumerate(ns):
+            for b in ns[i + 1:]:
+                if b % a == 0 and d[b] > d[a] + tol:
+                    bad.append(dict(S=k[0], Ly=k[1], J_AA=k[2], J_AB=k[3], m=k[4], chi=k[5],
+                                    n_small=a, e_small=d[a], n_large=b, e_large=d[b], excess=d[b] - d[a]))
+    return bad
+
+
 def write_table(rows):
     os.makedirs(os.path.join(ROOT, 'results'), exist_ok=True)
     with open(os.path.join(ROOT, 'results', 'table.csv'), 'w') as f:
@@ -372,6 +396,10 @@ if __name__ == '__main__':
     fig_em(rows)
     scan = fig_scan(rows)
     gvt = fig_gap_vs_trunc(rows)
+    mono = cell_monotonicity_check(rows)
+    with open(os.path.join(ROOT, 'results', 'cell_monotonicity.json'), 'w') as fh:
+        json.dump(mono, fh, indent=1)
+    print('cell monotonicity violations:', len(mono))
     print(gvt)
     fin = fig_finite()
     json.dump(dict(scan=scan, finite=fin), open(os.path.join(ROOT, 'results', 'derived.json'), 'w'), indent=1)

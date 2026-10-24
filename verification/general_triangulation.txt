@@ -1,0 +1,20 @@
+== (1) Euler checks
+  triangular L=3   {'V': 9, 'E': 27, 'F': 18, 'F_eq_2V': True, 'E_eq_3V': True, 'each_edge_in_2_tris': True, 'deg_eq_ntri': True, 'degrees': [6], 'ratio': 0.3333333333333333, 'ok': True}
+  triangular L=4   {'V': 16, 'E': 48, 'F': 32, 'F_eq_2V': True, 'E_eq_3V': True, 'each_edge_in_2_tris': True, 'deg_eq_ntri': True, 'degrees': [6], 'ratio': 0.3333333333333333, 'ok': True}
+  tetrakis L=3     {'V': 18, 'E': 54, 'F': 36, 'F_eq_2V': True, 'E_eq_3V': True, 'each_edge_in_2_tris': True, 'deg_eq_ntri': True, 'degrees': [4, 8], 'ratio': 0.3333333333333333, 'ok': True}
+  tetrakis L=4     {'V': 32, 'E': 96, 'F': 64, 'F_eq_2V': True, 'E_eq_3V': True, 'each_edge_in_2_tris': True, 'deg_eq_ntri': True, 'degrees': [4, 8], 'ratio': 0.3333333333333333, 'ok': True}
+== (2) Ising manifold (sigma=+-1, centres optimal)
+  triangular L=3   J_AA=1 J_AB=1: configs 512, distinct E 1, E_min/site -1.0000, degeneracy 512
+  triangular L=3   J_AA=1 J_AB=1.2: configs 512, distinct E 7, E_min/site -1.4000, degeneracy 2
+  tetrakis L=3     J_AA=1 J_AB=1: configs 262144, distinct E 1, E_min/site -1.0000, degeneracy 262144
+  tetrakis L=3     J_AA=1 J_AB=1.2: configs 262144, distinct E 17, E_min/site -1.4000, degeneracy 2
+== (3) O(lambda^2) potential on the Ising manifold, J_AA = J_AB
+  triangular L=3   S=1.0: min E2/site -1.0000 (pred -1.0000), degeneracy 2, minima are A-ferro: True, nonpositive denominators skipped: 0
+  triangular L=3   S=1.5: min E2/site -1.2857 (pred -1.2857), degeneracy 2, minima are A-ferro: True, nonpositive denominators skipped: 0
+  tetrakis L=3     S=1.0: min E2/site -1.0000 (pred -1.0000), degeneracy 2, minima are A-ferro: True, nonpositive denominators skipped: 0
+  tetrakis L=3     S=1.5: min E2/site -1.2857 (pred -1.2857), degeneracy 2, minima are A-ferro: True, nonpositive denominators skipped: 0
+== (4) classical Heisenberg (S=1): |L_T| and energy per triangle
+  J_AA/J_AB        0.400   0.600   0.667   0.700   0.800   1.000   1.200
+  |L| predicted    3.000   3.000   3.000   2.857   2.500   2.000   1.667
+  |L| triangular L=3  3.000   3.000   3.000   2.857   2.500   2.000   1.667   (max std 9.4e-05)
+  E/T triangular L=3 -2.400  -2.100  -2.000  -1.954  -1.850  -1.750  -1.733
