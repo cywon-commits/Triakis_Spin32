@@ -1,0 +1,16 @@
+1 python3 -m triakis.run_idmrg --S 2 --m 6 --nring 2 --chis 128 256 --Rmax 30
+1 python3 -m triakis.run_idmrg --S 2 --m 6.5 --nring 2 --chis 128 256 --Rmax 30
+1 python3 -m triakis.run_idmrg --S 2 --m 5.5 --nring 2 --chis 128 256 --Rmax 30
+1 python3 -m triakis.run_idmrg --S 1.5 --m 4.75 --nring 8 --chis 128 256 --Rmax 30
+1 python3 -m triakis.run_idmrg --S 1.5 --m 4.875 --nring 8 --chis 128 256 --Rmax 30
+1 python3 -m triakis.run_idmrg --S 2 --m 7 --nring 2 --chis 128 256 --Rmax 30
+1 python3 -m triakis.run_idmrg --S 2 --m 5 --nring 2 --chis 128 256 --Rmax 30
+1 python3 -m triakis.run_idmrg --S 0.5 --m 1.5 --nring 8 --chis 128 256 --Rmax 30
+1 python3 -m triakis.run_idmrg --S 0.5 --m 1.75 --nring 8 --chis 128 256 --Rmax 30
+1 python3 -m triakis.run_idmrg --S 0.5 --m 1.875 --nring 8 --chis 128 256 --Rmax 30
+1 python3 -m triakis.run_idmrg --S 0.5 --m 2 --nring 8 --chis 128 256 --Rmax 30
+1 python3 -m triakis.run_idmrg --S 2 --m 6 --nring 8 --chis 128 --Rmax 30
+1 python3 -m triakis.run_field --S 0.5 --m0 1.5 --nring 8 --h 0 --chis 64 128 256
+1 python3 -m triakis.run_field --S 0.5 --m0 1.5 --nring 8 --h 1.0 --chis 64 128 256
+1 python3 -m triakis.run_field --S 0.5 --m0 1.5 --nring 8 --h 0.4 --chis 64 128 256
+1 python3 -m triakis.run_field --S 0.5 --m0 1.5 --nring 8 --h 0.8 --chis 64 128 256

@@ -6,7 +6,7 @@ jobs.txt lines: "<threads> <command ...>"  (run from the repo root, logs in logs
 import subprocess, sys, time, os, re
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-PAT = r'triakis.run_idmrg|torus_dmrg.py|triakis.finite_cyl'
+PAT = r'triakis.run_idmrg|torus_dmrg.py|triakis.finite_cyl|triakis.run_field'
 
 
 def running():
