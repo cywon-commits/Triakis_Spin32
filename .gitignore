@@ -5,3 +5,4 @@ verification/codes_*.npy
 logs/
 data/*/log.txt
 verification/torus_log.txt
+psi_ckpt.pkl

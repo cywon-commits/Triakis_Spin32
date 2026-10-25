@@ -138,7 +138,14 @@ def main(argv=None):
     tab = ring_site_table(M.lat)
     print('MPO bond dims', M.H_MPO.chi, flush=True)
     psi_file = os.path.join(ddir, 'psi.pkl')
-    if a.restart and os.path.exists(psi_file):
+    ckpt_file = os.path.join(ddir, 'psi_ckpt.pkl')      # mid-run state, written every checkpoint
+    if a.restart and os.path.exists(ckpt_file) and (not os.path.exists(psi_file) or
+                                                    os.path.getmtime(ckpt_file) > os.path.getmtime(psi_file)):
+        with open(ckpt_file, 'rb') as f:
+            psi = pickle.load(f)
+        psi.canonical_form()
+        print('restarting from mid-run checkpoint', ckpt_file, 'chi', max(psi.chi), flush=True)
+    elif a.restart and os.path.exists(psi_file):
         with open(psi_file, 'rb') as f:
             psi = pickle.load(f)
     else:
@@ -160,6 +167,12 @@ def main(argv=None):
             ramp = [c for c in (16, 32, 64, 128, 256, 512) if c < chi] + [chi]
             p['chi_list'] = {2 * k: c for k, c in enumerate(ramp)}
         eng = dmrg.TwoSiteDMRGEngine(psi, M, p)
+
+        def _save_ckpt(engine):          # survive container restarts during long runs
+            with open(ckpt_file + '.tmp', 'wb') as f:
+                pickle.dump(engine.psi, f)
+            os.replace(ckpt_file + '.tmp', ckpt_file)
+        eng.checkpoint.connect(_save_ckpt)
         E, psi = eng.run()
         st = eng.sweep_stats
         trunc = float(st['max_trunc_err'][-1])
