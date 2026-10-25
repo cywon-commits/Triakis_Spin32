@@ -1,0 +1,4 @@
+1 python3 -m triakis.run_field --S 0.5 --m0 1.5 --nring 8 --h 0.8 --chis 64 128
+1 python3 -m triakis.run_field --S 1 --m0 3 --nring 8 --h 0 --chis 64 128
+1 python3 -m triakis.run_field --S 1 --m0 3 --nring 8 --h 0.4 --chis 64 128
+1 python3 -m triakis.run_field --S 1 --m0 3 --nring 8 --h 0.9 --chis 64 128
