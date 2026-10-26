@@ -122,6 +122,8 @@ def main(argv=None):
     ap.add_argument('--seed', type=int, default=-1, help='>=0: random initial product state')
     ap.add_argument('--Rmax', type=int, default=60, help='correlations up to Rmax rings')
     ap.add_argument('--max_sweeps', type=int, default=60)
+    ap.add_argument('--check_every', type=int, default=10,
+                    help='sweeps between convergence checks / checkpoint saves (TeNPy N_sweeps_check)')
     ap.add_argument('--restart', action='store_true', help='continue from saved psi.pkl')
     ap.add_argument('--tag', default='')
     a = ap.parse_args(argv)
@@ -161,7 +163,7 @@ def main(argv=None):
                  mixer_params=dict(amplitude=1e-4 if first else 1e-6, decay=1.5,
                                    disable_after=12 if first else 4),
                  max_E_err=1e-9, max_S_err=1e-6, min_sweeps=8 if first else 4,
-                 max_sweeps=a.max_sweeps,
+                 max_sweeps=a.max_sweeps, N_sweeps_check=a.check_every,
                  trunc_params=dict(chi_max=chi, svd_min=1e-10))
         if first:
             ramp = [c for c in (16, 32, 64, 128, 256, 512) if c < chi] + [chi]
