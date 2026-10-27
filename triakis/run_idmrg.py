@@ -172,6 +172,10 @@ def main(argv=None):
         eng = dmrg.TwoSiteDMRGEngine(psi, M, p)
 
         def _save_ckpt(engine):          # survive container restarts during long runs
+            # while the mixer is active the MPS holds non-diagonal S matrices and cannot be
+            # brought back to canonical form; keep the previous checkpoint instead
+            if any(not isinstance(S, np.ndarray) for S in engine.psi._S):
+                return
             with open(ckpt_file + '.tmp', 'wb') as f:
                 pickle.dump(engine.psi, f)
             os.replace(ckpt_file + '.tmp', ckpt_file)
