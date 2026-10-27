@@ -164,6 +164,7 @@ def main(argv=None):
                                    disable_after=12 if first else 4),
                  max_E_err=1e-9, max_S_err=1e-6, min_sweeps=8 if first else 4,
                  max_sweeps=a.max_sweeps, N_sweeps_check=a.check_every,
+                 max_trunc_err=1.0,      # trunc is recorded in the summary; do not abort
                  trunc_params=dict(chi_max=chi, svd_min=1e-10))
         if first:
             ramp = [c for c in (16, 32, 64, 128, 256, 512) if c < chi] + [chi]
